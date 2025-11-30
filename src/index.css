@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans bg-gray-50;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  .official-badge {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-sulphur text-ironwood font-semibold rounded-md shadow-sm;
+  }
+
+  .govt-button {
+    @apply px-6 py-3 bg-federal-blue text-white font-semibold rounded-md hover:bg-blue-900 transition-colors shadow-md;
+  }
+
+  .govt-button-secondary {
+    @apply px-6 py-3 bg-ironwood text-sulphur font-semibold rounded-md hover:bg-gray-800 transition-colors shadow-md;
+  }
+
+  .official-seal {
+    @apply w-16 h-16 bg-sulphur rounded-full flex items-center justify-center text-3xl shadow-lg border-4 border-ironwood;
+  }
+}
