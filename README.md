@@ -119,18 +119,14 @@ The application will open at `http://localhost:3000`
 ### Voter Access
 
 1. Click "Voter Portal" from the home page
-2. Enter your team code (e.g., NOVA47, ORBIT92, COSMO38, LUNAR65, ASTRO21)
+2. Enter your team's access code (provided to your team by the campaign coordinator)
 3. Enter your first name
 4. Select a round and criterion to vote
 5. Drag teams to rank them (your own team is excluded)
 6. Submit your official ballot
 
 **Team Codes:**
-- Vega: `NOVA47`
-- Spence: `ORBIT92`
-- Sterling: `COSMO38`
-- Strongbow: `LUNAR65`
-- Thorne: `ASTRO21`
+Team access codes are confidential and provided directly to each campaign team. Contact your campaign coordinator if you need your team's code.
 
 ### Admin Access
 

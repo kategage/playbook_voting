@@ -130,7 +130,7 @@ export default function VoterAuth({ onLogin, teams }) {
                 id="teamCode"
                 value={teamCode}
                 onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
-                placeholder="e.g., NOVA47"
+                placeholder="Enter your team code"
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-federal-blue focus:outline-none text-lg font-mono uppercase"
                 required
                 maxLength={10}
@@ -199,7 +199,7 @@ export default function VoterAuth({ onLogin, teams }) {
         </div>
       </div>
 
-      {/* Team Codes Reference */}
+      {/* Team Names Reference */}
       <div className="mt-6 bg-white rounded-lg shadow-lg p-6 border-2 border-gray-300">
         <h3 className="font-serif font-bold text-ironwood mb-4 text-center">
           Registered Campaign Teams
@@ -208,12 +208,11 @@ export default function VoterAuth({ onLogin, teams }) {
           {teams.map((team) => (
             <div key={team.id} className="bg-cream p-3 rounded border-2 border-sulphur text-center">
               <div className="font-bold text-ironwood">{team.name}</div>
-              <div className="text-xs text-gray-600 font-mono">{team.code}</div>
             </div>
           ))}
         </div>
         <p className="text-xs text-gray-500 text-center mt-4">
-          If you don't have a team code, please contact your campaign coordinator
+          Enter your team's access code provided by your campaign coordinator
         </p>
       </div>
     </div>

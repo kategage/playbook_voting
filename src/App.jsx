@@ -129,15 +129,14 @@ function App() {
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
-              { name: 'Vega', code: 'NOVA47' },
-              { name: 'Spence', code: 'ORBIT92' },
-              { name: 'Sterling', code: 'COSMO38' },
-              { name: 'Strongbow', code: 'LUNAR65' },
-              { name: 'Thorne', code: 'ASTRO21' }
+              { name: 'Vega' },
+              { name: 'Spence' },
+              { name: 'Sterling' },
+              { name: 'Strongbow' },
+              { name: 'Thorne' }
             ].map((team, idx) => (
               <div key={idx} className="bg-cream p-3 rounded border-2 border-sulphur text-center">
                 <div className="font-bold text-ironwood">{team.name}</div>
-                <div className="text-xs text-gray-600 font-mono">{team.code}</div>
               </div>
             ))}
           </div>
