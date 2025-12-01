@@ -198,8 +198,15 @@ export default function ResultsTab() {
         </div>
 
         <div className="p-6">
-          <div className="space-y-4">
-            {teamScores.map((score, index) => {
+          {teamScores.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">
+              <Trophy className="mx-auto mb-3 text-gray-400" size={48} />
+              <p className="text-lg font-semibold mb-2">No Results Available Yet</p>
+              <p className="text-sm">Teams will appear here once they are registered in the Setup tab.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {teamScores.map((score, index) => {
               const rank = index + 1
               const isWinner = rank === 1
               return (
@@ -278,7 +285,8 @@ export default function ResultsTab() {
                 </div>
               )
             })}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
