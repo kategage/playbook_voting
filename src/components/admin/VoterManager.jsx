@@ -34,7 +34,7 @@ export default function VoterManager({ teams }) {
     try {
       const { data, error } = await supabase
         .from('votes')
-        .select('voter_id, round, criterion')
+        .select('voter_id, phase')
 
       if (error) throw error
       setVotes(data || [])
