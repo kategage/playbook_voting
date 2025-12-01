@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, PHASES } from '../lib/supabase'
 import VoterAuth from './VoterAuth'
 import VotingInterface from './VotingInterface'
 import { LogOut, CheckCircle, Clock, Award } from 'lucide-react'
@@ -161,13 +161,14 @@ export default function VoterPortal({ onBack }) {
                   <h3 className="font-serif font-bold text-ironwood">Your Voting Record</h3>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[1, 2, 3, 4].map(round => {
-                    const roundVotes = voteHistory.filter(v => v.round === round)
+                  {PHASES.map(phaseInfo => {
+                    const phaseVote = voteHistory.find(v => v.phase === phaseInfo.id)
                     return (
-                      <div key={round} className="bg-white p-3 rounded border border-gray-300">
-                        <div className="text-sm font-semibold text-gray-600">Round {round}</div>
-                        <div className="text-lg font-bold text-federal-blue">
-                          {roundVotes.length > 0 ? `✅ ${roundVotes.length} ballots` : '⏳ Pending'}
+                      <div key={phaseInfo.id} className="bg-white p-3 rounded border border-gray-300">
+                        <div className="text-xs font-semibold text-gray-600 mb-1">Phase {phaseInfo.id}</div>
+                        <div className="text-xs font-bold text-ironwood mb-1">{phaseInfo.name}</div>
+                        <div className="text-sm font-bold text-federal-blue">
+                          {phaseVote ? '✅ Voted' : '⏳ Pending'}
                         </div>
                       </div>
                     )

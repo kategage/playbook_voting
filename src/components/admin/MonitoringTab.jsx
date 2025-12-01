@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import { supabase, PHASES } from '../../lib/supabase'
 import { Activity, Users, Clock, TrendingUp } from 'lucide-react'
 
 export default function MonitoringTab() {
   const [teams, setTeams] = useState([])
   const [voters, setVoters] = useState([])
   const [votes, setVotes] = useState([])
-  const [criteria, setCriteria] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedRound, setSelectedRound] = useState(1)
+  const [selectedPhase, setSelectedPhase] = useState(1)
   const [lastUpdate, setLastUpdate] = useState(new Date())
 
   useEffect(() => {
@@ -36,8 +35,7 @@ export default function MonitoringTab() {
     await Promise.all([
       loadTeams(),
       loadVoters(),
-      loadVotes(),
-      loadCriteria()
+      loadVotes()
     ])
     setLoading(false)
   }
@@ -65,22 +63,12 @@ export default function MonitoringTab() {
     if (!error) setVotes(data || [])
   }
 
-  const loadCriteria = async () => {
-    const { data, error } = await supabase
-      .from('criteria')
-      .select('*')
-      .eq('is_active', true)
-      .order('display_order')
-    if (!error) setCriteria(data || [])
-  }
-
-  const getTeamStats = (teamId, round) => {
+  const getTeamStats = (teamId, phase) => {
     const teamVoters = voters.filter(v => v.team_id === teamId)
-    const roundCriteria = criteria.filter(c => c.rounds.includes(round))
-    const expectedVotes = teamVoters.length * roundCriteria.length
+    const expectedVotes = teamVoters.length // 1 vote per phase per voter
 
     const actualVotes = votes.filter(v =>
-      v.team_id === teamId && v.round === round
+      v.team_id === teamId && v.phase === phase
     ).length
 
     return {
@@ -95,21 +83,20 @@ export default function MonitoringTab() {
     return votes.slice(0, limit).map(vote => {
       const voter = voters.find(v => v.voter_id === vote.voter_id)
       const team = teams.find(t => t.id === vote.team_id)
-      const criterion = criteria.find(c => c.id === vote.criterion)
+      const phaseInfo = PHASES.find(p => p.id === vote.phase)
       return {
         ...vote,
         voter_name: voter?.name || 'Unknown',
         team_name: team?.name || 'Unknown',
-        criterion_name: criterion?.name || vote.criterion,
-        criterion_icon: criterion?.icon || '❓'
+        phase_name: phaseInfo?.name || `Phase ${vote.phase}`,
+        vote_type_display: vote.vote_type === 'slider' ? '📊 Slider' : '🏆 Ranking'
       }
     })
   }
 
   const getTotalProgress = () => {
     const totalVoters = voters.length
-    const totalCriteria = criteria.reduce((sum, c) => sum + c.rounds.length, 0)
-    const expectedTotal = totalVoters * totalCriteria
+    const expectedTotal = totalVoters * 4 // 4 phases
     const actualTotal = votes.length
     return {
       total: actualTotal,
@@ -129,7 +116,7 @@ export default function MonitoringTab() {
 
   const totalProgress = getTotalProgress()
   const recentVotes = getRecentVotes(15)
-  const roundCriteria = criteria.filter(c => c.rounds.includes(selectedRound))
+  const selectedPhaseInfo = PHASES.find(p => p.id === selectedPhase)
 
   return (
     <div className="space-y-6">
@@ -170,41 +157,42 @@ export default function MonitoringTab() {
         </div>
       </div>
 
-      {/* Round Selector */}
+      {/* Phase Selector */}
       <div className="bg-white rounded-lg shadow-xl p-6 border-4 border-sulphur">
-        <h2 className="text-xl font-serif font-bold text-ironwood mb-4">Select Round to Monitor</h2>
-        <div className="grid grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(round => (
+        <h2 className="text-xl font-serif font-bold text-ironwood mb-4">Select Phase to Monitor</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {PHASES.map(phase => (
             <button
-              key={round}
-              onClick={() => setSelectedRound(round)}
+              key={phase.id}
+              onClick={() => setSelectedPhase(phase.id)}
               className={`p-4 rounded-lg border-2 transition-all ${
-                selectedRound === round
+                selectedPhase === phase.id
                   ? 'border-federal-blue bg-federal-blue text-white font-bold'
                   : 'border-gray-300 bg-white hover:border-federal-blue'
               }`}
             >
-              Round {round}
+              <div className="text-sm font-semibold mb-1">Phase {phase.id}</div>
+              <div className="text-xs">{phase.name}</div>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Team Progress for Selected Round */}
+      {/* Team Progress for Selected Phase */}
       <div className="bg-white rounded-lg shadow-xl overflow-hidden border-4 border-sulphur">
         <div className="bg-gradient-to-r from-federal-blue to-blue-900 px-6 py-4">
           <h2 className="text-2xl font-serif font-bold text-white">
-            Round {selectedRound} Progress by Team
+            {selectedPhaseInfo?.name} Progress by Team
           </h2>
           <p className="text-sm text-blue-100">
-            {roundCriteria.length} criteria active in this round
+            Phase {selectedPhase} • {selectedPhaseInfo?.type === 'slider' ? 'Slider Voting' : 'Ranked Voting'}
           </p>
         </div>
 
         <div className="p-6">
           <div className="space-y-4">
             {teams.map(team => {
-              const stats = getTeamStats(team.id, selectedRound)
+              const stats = getTeamStats(team.id, selectedPhase)
               return (
                 <div key={team.id} className="border-2 border-gray-300 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -256,13 +244,13 @@ export default function MonitoringTab() {
               <div key={vote.id} className="p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="text-2xl">{vote.criterion_icon}</div>
+                    <div className="text-2xl">{vote.vote_type === 'slider' ? '📊' : '🏆'}</div>
                     <div>
                       <div className="font-semibold text-gray-900">
                         {vote.voter_name} ({vote.team_name})
                       </div>
                       <div className="text-sm text-gray-600">
-                        Round {vote.round} • {vote.criterion_name}
+                        {vote.phase_name} • {vote.vote_type_display}
                       </div>
                     </div>
                   </div>
