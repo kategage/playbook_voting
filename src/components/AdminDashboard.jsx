@@ -4,7 +4,8 @@ import SetupTab from './admin/SetupTab'
 import MonitoringTab from './admin/MonitoringTab'
 import ResultsTab from './admin/ResultsTab'
 import VoterRegistryTab from './admin/VoterRegistryTab'
-import { Settings, Activity, BarChart3, Users, Shield } from 'lucide-react'
+import AnalyticsTab from './admin/AnalyticsTab'
+import { Settings, Activity, BarChart3, Users, Shield, TrendingUp } from 'lucide-react'
 
 export default function AdminDashboard({ onBack }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -17,6 +18,7 @@ export default function AdminDashboard({ onBack }) {
   const tabs = [
     { id: 'setup', label: 'Setup', icon: Settings, component: SetupTab },
     { id: 'monitoring', label: 'Live Monitoring', icon: Activity, component: MonitoringTab },
+    { id: 'analytics', label: 'Detailed Analysis', icon: TrendingUp, component: AnalyticsTab },
     { id: 'results', label: 'Results', icon: BarChart3, component: ResultsTab },
     { id: 'registry', label: 'Voter Registry', icon: Users, component: VoterRegistryTab }
   ]
@@ -57,7 +59,7 @@ export default function AdminDashboard({ onBack }) {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Tab Navigation */}
         <div className="bg-white rounded-lg shadow-xl mb-6 border-4 border-sulphur overflow-hidden">
-          <div className="grid grid-cols-4 divide-x divide-gray-300">
+          <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-gray-300">
             {tabs.map((tab) => {
               const Icon = tab.icon
               return (
