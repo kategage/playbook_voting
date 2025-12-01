@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import CriteriaManager from './CriteriaManager'
+import BonusPointsManager from './BonusPointsManager'
 import TeamManager from './TeamManager'
 import VoterManager from './VoterManager'
-import RoundLockManager from './RoundLockManager'
+import PhaseLocksManager from './PhaseLocksManager'
 import { AlertCircle } from 'lucide-react'
 
 export default function SetupTab() {
@@ -48,8 +48,9 @@ export default function SetupTab() {
           <div>
             <h3 className="font-bold text-federal-blue mb-2">Setup & Configuration</h3>
             <p className="text-sm text-gray-700">
-              Configure teams, assessment criteria, voter registration, and round controls.
-              Changes to criteria apply to future rounds only and preserve historical data.
+              Configure teams, voter registration, bonus points, and phase controls.
+              Voting system uses fixed metrics (Innovation, Feasibility, Impact) for phases 1-3,
+              and ranked choice for Phase 4 (The Final Election).
             </p>
           </div>
         </div>
@@ -58,14 +59,14 @@ export default function SetupTab() {
       {/* Team Configuration */}
       <TeamManager teams={teams} onTeamsUpdated={loadTeams} />
 
-      {/* Criteria Configuration - KEY FEATURE */}
-      <CriteriaManager />
-
       {/* Voter Management */}
       <VoterManager teams={teams} />
 
-      {/* Round Lock Controls */}
-      <RoundLockManager />
+      {/* Bonus Points Management */}
+      <BonusPointsManager teams={teams} />
+
+      {/* Phase Lock Controls */}
+      <PhaseLocksManager />
     </div>
   )
 }

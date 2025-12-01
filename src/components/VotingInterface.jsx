@@ -1,30 +1,29 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, PHASES } from '../lib/supabase'
+import SliderVotingCard from './SliderVotingCard'
 import RankingCard from './RankingCard'
 import { AlertTriangle, CheckCircle2, Lock, Unlock } from 'lucide-react'
 
 export default function VotingInterface({ voter, teams, onVoteSubmitted }) {
-  const [selectedRound, setSelectedRound] = useState(1)
-  const [selectedCriterion, setSelectedCriterion] = useState(null)
-  const [criteria, setCriteria] = useState([])
-  const [roundLocks, setRoundLocks] = useState({})
+  const [selectedPhase, setSelectedPhase] = useState(1)
+  const [phaseLocks, setPhaseLocks] = useState({})
+  const [phaseNames, setPhaseNames] = useState({})
   const [existingVotes, setExistingVotes] = useState({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadCriteria()
-    loadRoundLocks()
+    loadPhaseLocks()
     loadExistingVotes()
 
-    // Subscribe to round lock changes
+    // Subscribe to phase lock changes
     const subscription = supabase
-      .channel('round_locks_changes')
+      .channel('phase_locks_changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'round_locks'
+        table: 'phase_locks'
       }, () => {
-        loadRoundLocks()
+        loadPhaseLocks()
       })
       .subscribe()
 
@@ -37,50 +36,33 @@ export default function VotingInterface({ voter, teams, onVoteSubmitted }) {
     loadExistingVotes()
   }, [voter.voter_id])
 
-  const loadCriteria = async () => {
+  const loadPhaseLocks = async () => {
     try {
       const { data, error } = await supabase
-        .from('criteria')
+        .from('phase_locks')
         .select('*')
-        .eq('is_active', true)
-        .order('display_order')
+        .order('phase')
 
       if (error) throw error
-      setCriteria(data || [])
 
-      // Set first criterion for selected round as default
-      const firstCriterion = data?.find(c => c.rounds.includes(selectedRound))
-      if (firstCriterion) {
-        setSelectedCriterion(firstCriterion.id)
-      }
+      const locks = {}
+      const names = {}
+      data?.forEach(lock => {
+        locks[lock.phase] = lock.is_locked
+        names[lock.phase] = lock.phase_name
+      })
+      setPhaseLocks(locks)
+      setPhaseNames(names)
     } catch (error) {
-      console.error('Error loading criteria:', error)
+      console.error('Error loading phase locks:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const loadRoundLocks = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('round_locks')
-        .select('*')
-
-      if (error) throw error
-
-      const locks = {}
-      data?.forEach(lock => {
-        locks[lock.round] = lock.is_locked
-      })
-      setRoundLocks(locks)
-    } catch (error) {
-      console.error('Error loading round locks:', error)
-    }
-  }
-
   const loadExistingVotes = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('votes')
         .select('*')
         .eq('voter_id', voter.voter_id)
@@ -89,8 +71,7 @@ export default function VotingInterface({ voter, teams, onVoteSubmitted }) {
 
       const votes = {}
       data?.forEach(vote => {
-        const key = `${vote.round}-${vote.criterion}`
-        votes[key] = vote
+        votes[vote.phase] = vote
       })
       setExistingVotes(votes)
     } catch (error) {
@@ -98,18 +79,23 @@ export default function VotingInterface({ voter, teams, onVoteSubmitted }) {
     }
   }
 
-  const handleRoundChange = (round) => {
-    setSelectedRound(round)
-    // Select first available criterion for this round
-    const firstCriterion = criteria.find(c => c.rounds.includes(round))
-    if (firstCriterion) {
-      setSelectedCriterion(firstCriterion.id)
-    }
-  }
-
   const handleVoteComplete = async () => {
     await loadExistingVotes()
     onVoteSubmitted()
+  }
+
+  // Phase visibility: only show phases that are unlocked OR already have votes
+  const getUnlockedPhases = () => {
+    const unlocked = []
+    for (let phase = 1; phase <= 4; phase++) {
+      if (phaseLocks[phase] === false || existingVotes[phase]) {
+        unlocked.push(phase)
+      } else {
+        // Stop at first locked phase that hasn't been voted on
+        break
+      }
+    }
+    return unlocked
   }
 
   if (loading) {
@@ -121,120 +107,107 @@ export default function VotingInterface({ voter, teams, onVoteSubmitted }) {
     )
   }
 
-  // Filter criteria for selected round
-  const roundCriteria = criteria.filter(c => c.rounds.includes(selectedRound))
-  const currentCriterion = criteria.find(c => c.id === selectedCriterion)
-  const isRoundLocked = roundLocks[selectedRound]
-  const voteKey = `${selectedRound}-${selectedCriterion}`
-  const hasVoted = !!existingVotes[voteKey]
+  const currentPhaseInfo = PHASES.find(p => p.id === selectedPhase)
+  const isPhaseLocked = phaseLocks[selectedPhase]
+  const hasVoted = !!existingVotes[selectedPhase]
+  const unlockedPhases = getUnlockedPhases()
 
   return (
     <div className="space-y-6">
-      {/* Round Selection */}
+      {/* Phase Selection */}
       <div className="bg-white rounded-lg shadow-xl p-6 border-4 border-sulphur">
         <h2 className="text-2xl font-serif font-bold text-ironwood mb-4 text-center">
-          Select Assessment Round
+          Select Assessment Phase
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((round) => {
-            const isLocked = roundLocks[round]
-            const roundCriteriaCount = criteria.filter(c => c.rounds.includes(round)).length
-            const votedCount = criteria.filter(c =>
-              c.rounds.includes(round) && existingVotes[`${round}-${c.id}`]
-            ).length
+          {[1, 2, 3, 4].map((phase) => {
+            const isLocked = phaseLocks[phase]
+            const hasVotedPhase = !!existingVotes[phase]
+            const phaseInfo = PHASES.find(p => p.id === phase)
+            const isVisible = unlockedPhases.includes(phase)
+
+            // Don't show locked phases that haven't been voted on
+            if (!isVisible) {
+              return (
+                <div
+                  key={phase}
+                  className="p-4 rounded-lg border-2 border-gray-200 bg-gray-50 opacity-50"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-lg font-bold text-gray-400">Phase {phase}</span>
+                    <Lock size={18} className="text-gray-400" />
+                  </div>
+                  <div className="text-sm text-gray-400">Not yet available</div>
+                </div>
+              )
+            }
 
             return (
               <button
-                key={round}
-                onClick={() => handleRoundChange(round)}
-                disabled={isLocked}
+                key={phase}
+                onClick={() => setSelectedPhase(phase)}
+                disabled={isLocked && !hasVotedPhase}
                 className={`p-4 rounded-lg border-2 transition-all ${
-                  selectedRound === round
+                  selectedPhase === phase
                     ? 'border-federal-blue bg-federal-blue text-white shadow-lg transform scale-105'
-                    : isLocked
+                    : isLocked && !hasVotedPhase
                     ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'border-gray-300 bg-white hover:border-federal-blue hover:shadow-md'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-lg font-bold">Round {round}</span>
+                  <span className="text-lg font-bold">Phase {phase}</span>
                   {isLocked ? (
                     <Lock size={18} className="text-red-500" />
                   ) : (
                     <Unlock size={18} className="text-green-500" />
                   )}
                 </div>
-                <div className="text-sm">
-                  {votedCount}/{roundCriteriaCount} voted
+                <div className="text-xs mb-1 font-semibold">
+                  {phaseNames[phase] || phaseInfo?.name || `Phase ${phase}`}
                 </div>
-                {votedCount === roundCriteriaCount && roundCriteriaCount > 0 && (
-                  <div className="mt-2 text-green-400">✅ Complete</div>
-                )}
+                <div className="text-sm">
+                  {hasVotedPhase ? '✅ Voted' : '⏳ Pending'}
+                </div>
               </button>
             )
           })}
         </div>
       </div>
 
-      {/* Criterion Selection */}
-      {roundCriteria.length > 0 && (
-        <div className="bg-white rounded-lg shadow-xl p-6 border-4 border-sulphur">
-          <h3 className="text-xl font-serif font-bold text-ironwood mb-4 text-center">
-            Select Assessment Criterion
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {roundCriteria.map((criterion) => {
-              const voted = !!existingVotes[`${selectedRound}-${criterion.id}`]
-
-              return (
-                <button
-                  key={criterion.id}
-                  onClick={() => setSelectedCriterion(criterion.id)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    selectedCriterion === criterion.id
-                      ? 'border-sulphur bg-cream shadow-lg transform scale-105'
-                      : 'border-gray-300 bg-white hover:border-sulphur hover:shadow-md'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{criterion.icon}</div>
-                  <div className="font-bold text-ironwood mb-1">{criterion.name}</div>
-                  <div className="text-xs text-gray-600 mb-2">{criterion.description}</div>
-                  {voted && (
-                    <div className="flex items-center justify-center gap-1 text-green-600 text-sm font-semibold">
-                      <CheckCircle2 size={16} />
-                      Voted
-                    </div>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Voting Area */}
-      {isRoundLocked ? (
+      {isPhaseLocked && !hasVoted ? (
         <div className="bg-red-50 border-4 border-red-500 rounded-lg p-8 text-center">
           <Lock className="text-red-600 mx-auto mb-4" size={48} />
-          <h3 className="text-2xl font-bold text-red-800 mb-2">Round {selectedRound} Locked</h3>
+          <h3 className="text-2xl font-bold text-red-800 mb-2">Phase {selectedPhase} Locked</h3>
           <p className="text-red-700">
-            This voting round has been closed by election officials. Please select another round.
+            This voting phase has been closed by election officials. Please select another phase.
           </p>
         </div>
-      ) : currentCriterion ? (
-        <RankingCard
-          voter={voter}
-          teams={teams}
-          round={selectedRound}
-          criterion={currentCriterion}
-          hasVoted={hasVoted}
-          existingVote={existingVotes[voteKey]}
-          onVoteComplete={handleVoteComplete}
-        />
+      ) : currentPhaseInfo ? (
+        currentPhaseInfo.type === 'slider' ? (
+          <SliderVotingCard
+            voter={voter}
+            teams={teams}
+            phase={selectedPhase}
+            hasVoted={hasVoted}
+            existingVote={existingVotes[selectedPhase]}
+            onVoteComplete={handleVoteComplete}
+          />
+        ) : (
+          <RankingCard
+            voter={voter}
+            teams={teams}
+            phase={selectedPhase}
+            hasVoted={hasVoted}
+            existingVote={existingVotes[selectedPhase]}
+            onVoteComplete={handleVoteComplete}
+          />
+        )
       ) : (
         <div className="bg-gray-100 rounded-lg p-8 text-center border-2 border-gray-300">
           <AlertTriangle className="text-gray-400 mx-auto mb-4" size={48} />
-          <p className="text-gray-600">No criteria available for Round {selectedRound}</p>
+          <p className="text-gray-600">Invalid phase selected</p>
         </div>
       )}
     </div>

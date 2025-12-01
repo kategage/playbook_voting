@@ -1,13 +1,44 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, PHASES } from '../lib/supabase'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { GripVertical, AlertCircle, CheckCircle, Send } from 'lucide-react'
+
+// Team color utility function
+const getTeamColorClass = (teamId, type = 'header') => {
+  const colors = {
+    1: { // Vega - Blue
+      header: 'bg-gradient-to-r from-blue-600 to-blue-700',
+      badge: 'bg-blue-600 text-white',
+      border: 'border-blue-500'
+    },
+    2: { // Spence - Green
+      header: 'bg-gradient-to-r from-green-600 to-green-700',
+      badge: 'bg-green-600 text-white',
+      border: 'border-green-500'
+    },
+    3: { // Sterling - Purple
+      header: 'bg-gradient-to-r from-purple-600 to-purple-700',
+      badge: 'bg-purple-600 text-white',
+      border: 'border-purple-500'
+    },
+    4: { // Strongbow - Orange
+      header: 'bg-gradient-to-r from-orange-600 to-orange-700',
+      badge: 'bg-orange-600 text-white',
+      border: 'border-orange-500'
+    },
+    5: { // Thorne - Rose/Pink
+      header: 'bg-gradient-to-r from-rose-600 to-rose-700',
+      badge: 'bg-rose-600 text-white',
+      border: 'border-rose-500'
+    }
+  }
+  return colors[teamId]?.[type] || colors[1][type]
+}
 
 export default function RankingCard({
   voter,
   teams,
-  round,
-  criterion,
+  phase,
   hasVoted,
   existingVote,
   onVoteComplete
@@ -18,13 +49,15 @@ export default function RankingCard({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  const phaseInfo = PHASES.find(p => p.id === phase)
+
   useEffect(() => {
     // Initialize teams (exclude voter's own team)
     const otherTeams = teams.filter(t => t.id !== voter.team_id)
 
-    if (existingVote && existingVote.rankings) {
+    if (existingVote && existingVote.vote_data && existingVote.vote_data.rankings) {
       // Load existing rankings
-      const rankings = existingVote.rankings
+      const rankings = existingVote.vote_data.rankings
       const orderedTeams = rankings.map(teamId =>
         otherTeams.find(t => t.id === teamId)
       ).filter(Boolean)
@@ -61,7 +94,7 @@ export default function RankingCard({
       const rankings = rankedTeams.map(t => t.id)
 
       // Generate confirmation number
-      const confirmNum = `CPB-R${round}C-${voter.team_code}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
+      const confirmNum = `CPB-P${phase}-${voter.team_code}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
 
       // Submit vote
       const { error: voteError } = await supabase
@@ -69,12 +102,12 @@ export default function RankingCard({
         .upsert({
           voter_id: voter.voter_id,
           team_id: voter.team_id,
-          round: round,
-          criterion: criterion.id,
-          rankings: rankings,
+          phase: phase,
+          vote_type: 'ranking',
+          vote_data: { rankings: rankings },
           timestamp: new Date().toISOString()
         }, {
-          onConflict: 'voter_id,round,criterion'
+          onConflict: 'voter_id,phase'
         })
 
       if (voteError) throw voteError
@@ -115,9 +148,9 @@ export default function RankingCard({
               </div>
             </div>
             <div className="border-t-2 border-sulphur pt-4 text-center text-sm text-gray-700">
-              <p><strong>Round:</strong> {round}</p>
-              <p><strong>Criterion:</strong> {criterion.icon} {criterion.name}</p>
+              <p><strong>Phase:</strong> {phaseInfo?.name}</p>
               <p><strong>Voter:</strong> {voter.name} ({voter.team_name})</p>
+              <p><strong>Teams Ranked:</strong> {rankedTeams.length}</p>
             </div>
           </div>
 
@@ -162,11 +195,11 @@ export default function RankingCard({
     <div className="bg-white rounded-lg shadow-xl overflow-hidden border-4 border-sulphur">
       <div className="bg-gradient-to-r from-federal-blue to-blue-900 text-white px-8 py-6">
         <div className="text-center">
-          <div className="text-5xl mb-3">{criterion.icon}</div>
+          <div className="text-5xl mb-3">🏆</div>
           <h2 className="text-3xl font-serif font-bold mb-2">
-            Round {round} - {criterion.name}
+            {phaseInfo?.name}
           </h2>
-          <p className="text-blue-100">{criterion.description}</p>
+          <p className="text-blue-100">Rank the campaign teams in order of preference</p>
         </div>
       </div>
 
@@ -175,7 +208,7 @@ export default function RankingCard({
           <div className="flex items-center justify-center gap-2 text-green-800">
             <CheckCircle size={20} />
             <span className="font-semibold">
-              You have already voted for this criterion. You can update your rankings below.
+              You have already voted for this phase. You can update your rankings below.
             </span>
           </div>
         </div>
@@ -228,8 +261,8 @@ export default function RankingCard({
                           {...provided.dragHandleProps}
                           className={`flex items-center gap-4 bg-white p-4 rounded-lg border-2 shadow-sm transition-all ${
                             snapshot.isDragging
-                              ? 'border-federal-blue shadow-xl scale-105'
-                              : 'border-gray-300 hover:border-gray-400'
+                              ? `${getTeamColorClass(team.id, 'border')} shadow-xl scale-105`
+                              : `${getTeamColorClass(team.id, 'border')} hover:shadow-md`
                           }`}
                         >
                           <GripVertical className="text-gray-400" size={24} />
@@ -238,12 +271,13 @@ export default function RankingCard({
                             {index + 1}
                           </div>
 
+                          <div className={`flex items-center justify-center w-12 h-12 rounded-full font-bold text-xl ${getTeamColorClass(team.id, 'badge')}`}>
+                            {team.name[0]}
+                          </div>
+
                           <div className="flex-1">
                             <div className="font-bold text-lg text-ironwood">
                               {team.name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              Team Code: {team.code}
                             </div>
                           </div>
 

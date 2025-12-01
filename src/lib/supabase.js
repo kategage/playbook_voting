@@ -5,6 +5,54 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Phase configuration
+export const PHASES = [
+  { id: 1, name: 'THE LAUNCH', type: 'slider' },
+  { id: 2, name: 'THE GOVERNANCE TEST', type: 'slider' },
+  { id: 3, name: 'THE DATA BLACKOUT', type: 'slider' },
+  { id: 4, name: 'THE FINAL ELECTION', type: 'ranking' }
+]
+
+// Metrics for slider-based phases (1-3)
+export const METRICS = [
+  {
+    id: 'innovation',
+    name: 'Innovation',
+    question: 'Did they break the mold?',
+    descriptions: {
+      1: 'Not innovative: Conventional; existing campaign run today',
+      2: 'Slightly innovative: Minor twist on familiar idea; still largely conventional',
+      3: 'Moderately innovative: Fresh angle or creative element; noticeable but not bold',
+      4: 'Highly innovative: Distinctive concept with clear originality; challenges norms',
+      5: 'Reimagined: Bold, game-changing idea that redefines expectations'
+    }
+  },
+  {
+    id: 'feasibility',
+    name: 'Feasibility',
+    question: 'Is the budget/logistics real?',
+    descriptions: {
+      1: 'Not feasible: Budget unrealistic; major logistical/operational barriers',
+      2: 'Low feasibility: Significant challenges; requires major resources or assumptions',
+      3: 'Moderately feasible: Possible but requires tradeoffs, adjustments, or added resources',
+      4: 'Highly feasible: Budget and logistics sound; minor risks but manageable',
+      5: 'Fully feasible: Clear, practical, cost-realistic plan with no major obstacles'
+    }
+  },
+  {
+    id: 'impact',
+    name: 'Impact',
+    question: 'Would this actually move a voter?',
+    descriptions: {
+      1: 'No impact: Unlikely to influence voter awareness, opinion, or behavior',
+      2: 'Low impact: Limited appeal; may resonate with small niche',
+      3: 'Moderate impact: Has potential to persuade or motivate some target voters',
+      4: 'High impact: Strong resonance; likely to move most voters in intended segment',
+      5: 'Transformational impact: Compelling, memorable, highly persuasive; capable of shifting attitudes at scale'
+    }
+  }
+]
+
 // Database initialization script (run once)
 export const initializeDatabase = async () => {
   try {
@@ -31,53 +79,17 @@ export const initializeDatabase = async () => {
       console.error('Error inserting teams:', teamsError)
     }
 
-    // Initialize round locks
-    const roundLocks = [
-      { round: 1, is_locked: false },
-      { round: 2, is_locked: false },
-      { round: 3, is_locked: false },
-      { round: 4, is_locked: false }
+    // Initialize phase locks
+    const phaseLocks = [
+      { phase: 1, phase_name: 'THE LAUNCH', is_locked: false },
+      { phase: 2, phase_name: 'THE GOVERNANCE TEST', is_locked: false },
+      { phase: 3, phase_name: 'THE DATA BLACKOUT', is_locked: false },
+      { phase: 4, phase_name: 'THE FINAL ELECTION', is_locked: false }
     ]
 
-    const { error: locksError } = await supabase.from('round_locks').upsert(roundLocks)
+    const { error: locksError } = await supabase.from('phase_locks').upsert(phaseLocks)
     if (locksError) {
-      console.error('Error inserting round locks:', locksError)
-    }
-
-    // Initialize default criteria
-    const criteria = [
-      {
-        id: 'creativity',
-        name: 'Creativity',
-        icon: '🎨',
-        rounds: [1, 2, 3, 4],
-        description: 'Originality and innovative thinking',
-        display_order: 1,
-        is_active: true
-      },
-      {
-        id: 'effectiveness',
-        name: 'Effectiveness',
-        icon: '⚡',
-        rounds: [1, 2, 3, 4],
-        description: 'Impact and measurable results',
-        display_order: 2,
-        is_active: true
-      },
-      {
-        id: 'adaptation',
-        name: 'Adaptation',
-        icon: '🔄',
-        rounds: [4],
-        description: 'Ability to adjust and improve based on feedback',
-        display_order: 3,
-        is_active: true
-      }
-    ]
-
-    const { error: criteriaError } = await supabase.from('criteria').upsert(criteria)
-    if (criteriaError) {
-      console.error('Error inserting criteria:', criteriaError)
+      console.error('Error inserting phase locks:', locksError)
     }
 
     console.log('Database initialized successfully')
