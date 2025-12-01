@@ -2,6 +2,38 @@ import React, { useState, useEffect } from 'react'
 import { supabase, METRICS, PHASES } from '../lib/supabase'
 import { AlertCircle, CheckCircle, Send, Info } from 'lucide-react'
 
+// Team color utility function
+const getTeamColorClass = (teamId, type = 'header') => {
+  const colors = {
+    1: { // Vega - Blue
+      header: 'bg-gradient-to-r from-blue-600 to-blue-700',
+      badge: 'bg-blue-100 text-blue-800',
+      border: 'border-blue-500'
+    },
+    2: { // Spence - Green
+      header: 'bg-gradient-to-r from-green-600 to-green-700',
+      badge: 'bg-green-100 text-green-800',
+      border: 'border-green-500'
+    },
+    3: { // Sterling - Purple
+      header: 'bg-gradient-to-r from-purple-600 to-purple-700',
+      badge: 'bg-purple-100 text-purple-800',
+      border: 'border-purple-500'
+    },
+    4: { // Strongbow - Orange
+      header: 'bg-gradient-to-r from-orange-600 to-orange-700',
+      badge: 'bg-orange-100 text-orange-800',
+      border: 'border-orange-500'
+    },
+    5: { // Thorne - Rose/Pink
+      header: 'bg-gradient-to-r from-rose-600 to-rose-700',
+      badge: 'bg-rose-100 text-rose-800',
+      border: 'border-rose-500'
+    }
+  }
+  return colors[teamId]?.[type] || colors[1][type]
+}
+
 export default function SliderVotingCard({
   voter,
   teams,
@@ -176,17 +208,16 @@ export default function SliderVotingCard({
           {otherTeams.map(team => (
             <div
               key={team.id}
-              className="border-2 border-gray-300 rounded-lg overflow-hidden hover:border-federal-blue transition-colors"
+              className={`border-2 rounded-lg overflow-hidden transition-colors ${getTeamColorClass(team.id, 'border')}`}
             >
               {/* Team Header */}
-              <div className="bg-gradient-to-r from-sulphur to-yellow-500 px-6 py-4">
+              <div className={`px-6 py-4 ${getTeamColorClass(team.id, 'header')}`}>
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-ironwood rounded-full flex items-center justify-center text-sulphur font-bold text-xl">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${getTeamColorClass(team.id, 'badge')}`}>
                     {team.name[0]}
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-ironwood">{team.name}</h3>
-                    <p className="text-sm text-gray-700">Team Code: {team.code}</p>
+                    <h3 className="text-2xl font-bold text-white">{team.name}</h3>
                   </div>
                 </div>
               </div>
