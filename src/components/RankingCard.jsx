@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, PHASES } from '../lib/supabase'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { GripVertical, AlertCircle, CheckCircle, Send } from 'lucide-react'
 
 export default function RankingCard({
   voter,
   teams,
-  round,
-  criterion,
+  phase,
   hasVoted,
   existingVote,
   onVoteComplete
@@ -18,13 +17,15 @@ export default function RankingCard({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  const phaseInfo = PHASES.find(p => p.id === phase)
+
   useEffect(() => {
     // Initialize teams (exclude voter's own team)
     const otherTeams = teams.filter(t => t.id !== voter.team_id)
 
-    if (existingVote && existingVote.rankings) {
+    if (existingVote && existingVote.vote_data && existingVote.vote_data.rankings) {
       // Load existing rankings
-      const rankings = existingVote.rankings
+      const rankings = existingVote.vote_data.rankings
       const orderedTeams = rankings.map(teamId =>
         otherTeams.find(t => t.id === teamId)
       ).filter(Boolean)
@@ -61,7 +62,7 @@ export default function RankingCard({
       const rankings = rankedTeams.map(t => t.id)
 
       // Generate confirmation number
-      const confirmNum = `CPB-R${round}C-${voter.team_code}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
+      const confirmNum = `CPB-P${phase}-${voter.team_code}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
 
       // Submit vote
       const { error: voteError } = await supabase
@@ -69,12 +70,12 @@ export default function RankingCard({
         .upsert({
           voter_id: voter.voter_id,
           team_id: voter.team_id,
-          round: round,
-          criterion: criterion.id,
-          rankings: rankings,
+          phase: phase,
+          vote_type: 'ranking',
+          vote_data: { rankings: rankings },
           timestamp: new Date().toISOString()
         }, {
-          onConflict: 'voter_id,round,criterion'
+          onConflict: 'voter_id,phase'
         })
 
       if (voteError) throw voteError
@@ -115,9 +116,9 @@ export default function RankingCard({
               </div>
             </div>
             <div className="border-t-2 border-sulphur pt-4 text-center text-sm text-gray-700">
-              <p><strong>Round:</strong> {round}</p>
-              <p><strong>Criterion:</strong> {criterion.icon} {criterion.name}</p>
+              <p><strong>Phase:</strong> {phaseInfo?.name}</p>
               <p><strong>Voter:</strong> {voter.name} ({voter.team_name})</p>
+              <p><strong>Teams Ranked:</strong> {rankedTeams.length}</p>
             </div>
           </div>
 
@@ -162,11 +163,11 @@ export default function RankingCard({
     <div className="bg-white rounded-lg shadow-xl overflow-hidden border-4 border-sulphur">
       <div className="bg-gradient-to-r from-federal-blue to-blue-900 text-white px-8 py-6">
         <div className="text-center">
-          <div className="text-5xl mb-3">{criterion.icon}</div>
+          <div className="text-5xl mb-3">🏆</div>
           <h2 className="text-3xl font-serif font-bold mb-2">
-            Round {round} - {criterion.name}
+            {phaseInfo?.name}
           </h2>
-          <p className="text-blue-100">{criterion.description}</p>
+          <p className="text-blue-100">Rank the campaign teams in order of preference</p>
         </div>
       </div>
 
@@ -175,7 +176,7 @@ export default function RankingCard({
           <div className="flex items-center justify-center gap-2 text-green-800">
             <CheckCircle size={20} />
             <span className="font-semibold">
-              You have already voted for this criterion. You can update your rankings below.
+              You have already voted for this phase. You can update your rankings below.
             </span>
           </div>
         </div>
