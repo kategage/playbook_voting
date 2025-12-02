@@ -69,7 +69,10 @@ export default function SliderVotingCard({
       })
       setScores(initialScores)
     }
-  }, [teams, voter.team_id, existingVote])
+
+    // Reset locked teams when phase changes
+    setLockedTeams({})
+  }, [teams, voter.team_id, existingVote, phase])
 
   const handleSliderChange = (teamId, metricId, value) => {
     setScores(prev => ({
