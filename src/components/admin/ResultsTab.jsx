@@ -297,7 +297,7 @@ export default function ResultsTab() {
           Scoring Methodology
         </h3>
         <div className="text-sm text-gray-700 space-y-2">
-          <p><strong>Phases 1-3 (Slider Voting):</strong> Teams are evaluated on 3 metrics (Innovation, Adaptability, Impact) with scores 1-5. All scores are summed.</p>
+          <p><strong>Phases 1-3 (Slider Voting):</strong> Teams are evaluated on 3 metrics (Innovation, Adaptability, Impact) with scores 1-4. All scores are summed.</p>
           <p><strong>Phase 4 (Ranked Voting):</strong> Traditional ranked-choice. 1st place = 5 points, 2nd = 4 points, 3rd = 3 points, 4th = 2 points.</p>
           <p><strong>Bonus Points:</strong> Admin-awarded points (positive or negative) for special achievements or penalties.</p>
           <p><strong>Total Points:</strong> Sum of all slider scores + ranking points + bonus points.</p>

@@ -52,7 +52,6 @@ export default function AnalyticsTab() {
     })
 
     const distribution = {
-      5: scores.filter(s => s === 5).length,
       4: scores.filter(s => s === 4).length,
       3: scores.filter(s => s === 3).length,
       2: scores.filter(s => s === 2).length,
@@ -93,7 +92,7 @@ export default function AnalyticsTab() {
   // Export to CSV
   const exportToCSV = () => {
     const sliderPhases = PHASES.filter(p => p.type === 'slider')
-    const headers = ['Team,Phase,Metric,Average,Total,5 Stars,4 Stars,3 Stars,2 Stars,1 Star,Total Votes']
+    const headers = ['Team,Phase,Metric,Average,Total,4 Stars,3 Stars,2 Stars,1 Star,Total Votes']
     const rows = []
 
     teams.forEach(team => {
@@ -102,7 +101,7 @@ export default function AnalyticsTab() {
           const analytics = calculateMetricAnalytics(team.id, phase.id, metric.id)
           rows.push(
             `${team.name},${phase.name},${metric.name},${analytics.average},${analytics.total},` +
-            `${analytics.distribution[5]},${analytics.distribution[4]},${analytics.distribution[3]},` +
+            `${analytics.distribution[4]},${analytics.distribution[3]},` +
             `${analytics.distribution[2]},${analytics.distribution[1]},${analytics.voteCount}`
           )
         })
@@ -284,7 +283,7 @@ export default function AnalyticsTab() {
 
                         <div className="space-y-2">
                           <div className="text-sm font-semibold text-gray-700 mb-2">Score Distribution:</div>
-                          {[5, 4, 3, 2, 1].map(star => (
+                          {[4, 3, 2, 1].map(star => (
                             <div key={star} className="flex items-center gap-3">
                               <span className="text-sm font-semibold text-gray-700 w-20">
                                 {star} {star === 1 ? 'star' : 'stars'}:
@@ -333,7 +332,6 @@ export default function AnalyticsTab() {
                           <th className="px-4 py-3 text-left font-bold text-gray-700 border">Team</th>
                           <th className="px-4 py-3 text-center font-bold text-gray-700 border">Avg</th>
                           <th className="px-4 py-3 text-center font-bold text-gray-700 border">Total</th>
-                          <th className="px-4 py-3 text-center font-bold text-gray-700 border">5★</th>
                           <th className="px-4 py-3 text-center font-bold text-gray-700 border">4★</th>
                           <th className="px-4 py-3 text-center font-bold text-gray-700 border">3★</th>
                           <th className="px-4 py-3 text-center font-bold text-gray-700 border">2★</th>
@@ -349,7 +347,6 @@ export default function AnalyticsTab() {
                               <td className="px-4 py-3 font-semibold text-gray-900 border">{team.name}</td>
                               <td className="px-4 py-3 text-center font-bold text-federal-blue border">{analytics.average}</td>
                               <td className="px-4 py-3 text-center font-bold text-green-600 border">{analytics.total}</td>
-                              <td className="px-4 py-3 text-center border">{analytics.distribution[5]}</td>
                               <td className="px-4 py-3 text-center border">{analytics.distribution[4]}</td>
                               <td className="px-4 py-3 text-center border">{analytics.distribution[3]}</td>
                               <td className="px-4 py-3 text-center border">{analytics.distribution[2]}</td>
@@ -371,7 +368,6 @@ export default function AnalyticsTab() {
                     <th className="px-4 py-3 text-left font-bold text-gray-700 border">Team</th>
                     <th className="px-4 py-3 text-center font-bold text-gray-700 border">Avg</th>
                     <th className="px-4 py-3 text-center font-bold text-gray-700 border">Total</th>
-                    <th className="px-4 py-3 text-center font-bold text-gray-700 border">5★</th>
                     <th className="px-4 py-3 text-center font-bold text-gray-700 border">4★</th>
                     <th className="px-4 py-3 text-center font-bold text-gray-700 border">3★</th>
                     <th className="px-4 py-3 text-center font-bold text-gray-700 border">2★</th>
@@ -387,7 +383,6 @@ export default function AnalyticsTab() {
                         <td className="px-4 py-3 font-semibold text-gray-900 border">{team.name}</td>
                         <td className="px-4 py-3 text-center font-bold text-federal-blue border">{analytics.average}</td>
                         <td className="px-4 py-3 text-center font-bold text-green-600 border">{analytics.total}</td>
-                        <td className="px-4 py-3 text-center border">{analytics.distribution[5]}</td>
                         <td className="px-4 py-3 text-center border">{analytics.distribution[4]}</td>
                         <td className="px-4 py-3 text-center border">{analytics.distribution[3]}</td>
                         <td className="px-4 py-3 text-center border">{analytics.distribution[2]}</td>
@@ -470,7 +465,7 @@ export default function AnalyticsTab() {
           About This Analysis
         </h3>
         <div className="text-sm text-gray-700 space-y-2">
-          <p><strong>Score Distribution:</strong> Shows how many voters gave each rating (1-5 stars) for each metric.</p>
+          <p><strong>Score Distribution:</strong> Shows how many voters gave each rating (1-4 stars) for each metric.</p>
           <p><strong>Average:</strong> Mean score across all voters for that metric.</p>
           <p><strong>Total Points:</strong> Sum of all scores received for that metric.</p>
           <p><strong>Vote Count:</strong> Number of voters who scored this team on this metric.</p>
