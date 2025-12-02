@@ -22,9 +22,8 @@ export const METRICS = [
     descriptions: {
       1: 'Not innovative: Conventional; existing campaign run today',
       2: 'Slightly innovative: Minor twist on familiar idea; still largely conventional',
-      3: 'Moderately innovative: Fresh angle or creative element; noticeable but not bold',
-      4: 'Highly innovative: Distinctive concept with clear originality; challenges norms',
-      5: 'Reimagined: Bold, game-changing idea that redefines expectations'
+      3: 'Highly innovative: Distinctive concept with clear originality; challenges norms',
+      4: 'Reimagined: Bold, game-changing idea that redefines expectations'
     }
   },
   {
@@ -34,9 +33,8 @@ export const METRICS = [
     descriptions: {
       1: 'RIGID: Ignored the new constraints completely. Continued running a "2024 Playbook" campaign despite the changes in scenario. Made zero changes to their chip allocation. Treated the crisis as a minor annoyance rather than a structural shift.',
       2: 'REACTIVE (Too Little, Too Late): Acknowledged the crisis but only made superficial tweaks (e.g., changed a slogan but not the operation). Reluctantly moved a few chips but protected their "pet projects" despite them being useless. Complained about the constraints rather than solving for them.',
-      3: 'RESPONSIVE (Competent Pivot): Accepted the new reality and made logical adjustments. They shifted focus to the immediate problem. Cut the required budget amount but struggled to repurpose the remaining funds effectively. They solved the immediate problem but didn\'t change their long-term approach.',
-      4: 'AGILE (Strategic Shift): Proactively abandoned old tactics before they failed. They anticipated the next move. Aggressively re-allocated resources to high-impact areas. Turned the crisis into an opportunity. They used the constraint to build a new kind of power.',
-      5: 'ANTIFRAGILE (Paradigm Shift): Completely reinvented the campaign model. They aren\'t just surviving the crisis; they are thriving because of it. Zero-based budgeting every round. They ruthlessly cut anything that doesn\'t work today. They built a system that gets stronger when the central infrastructure breaks.'
+      3: 'AGILE (Strategic Shift): Proactively abandoned old tactics before they failed. They anticipated the next move. Aggressively re-allocated resources to high-impact areas. Turned the crisis into an opportunity. They used the constraint to build a new kind of power.',
+      4: 'ANTIFRAGILE (Paradigm Shift): Completely reinvented the campaign model. They aren\'t just surviving the crisis; they are thriving because of it. Zero-based budgeting every round. They ruthlessly cut anything that doesn\'t work today. They built a system that gets stronger when the central infrastructure breaks.'
     }
   },
   {
@@ -46,9 +44,8 @@ export const METRICS = [
     descriptions: {
       1: 'No impact: Unlikely to influence voter awareness, opinion, or behavior',
       2: 'Low impact: Limited appeal; may resonate with small niche',
-      3: 'Moderate impact: Has potential to persuade or motivate some target voters',
-      4: 'High impact: Strong resonance; likely to move most voters in intended segment',
-      5: 'Transformational impact: Compelling, memorable, highly persuasive; capable of shifting attitudes at scale'
+      3: 'High impact: Strong resonance; likely to move most voters in intended segment',
+      4: 'Transformational impact: Compelling, memorable, highly persuasive; capable of shifting attitudes at scale'
     }
   }
 ]

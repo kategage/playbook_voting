@@ -60,10 +60,10 @@ export default function SliderVotingCard({
       // Load existing scores
       setScores(existingVote.vote_data)
     } else {
-      // Initialize with default value of 3 (middle)
+      // Initialize with default value of 2 (middle of 1-4 scale)
       otherTeams.forEach(team => {
         METRICS.forEach(metric => {
-          initialScores[`${team.id}-${metric.id}`] = 3
+          initialScores[`${team.id}-${metric.id}`] = 2
         })
       })
       setScores(initialScores)
@@ -226,7 +226,7 @@ export default function SliderVotingCard({
               <div className="p-6 space-y-6 bg-gray-50">
                 {METRICS.map(metric => {
                   const scoreKey = `${team.id}-${metric.id}`
-                  const score = scores[scoreKey] || 3
+                  const score = scores[scoreKey] || 2
                   const isExpanded = expandedMetric === scoreKey
 
                   return (
@@ -239,7 +239,7 @@ export default function SliderVotingCard({
                           </div>
                           <div className="text-right">
                             <div className="text-3xl font-bold text-federal-blue">{score}</div>
-                            <div className="text-xs text-gray-500">out of 5</div>
+                            <div className="text-xs text-gray-500">out of 4</div>
                           </div>
                         </div>
 
@@ -255,13 +255,13 @@ export default function SliderVotingCard({
                       <input
                         type="range"
                         min="1"
-                        max="5"
+                        max="4"
                         step="1"
                         value={score}
                         onChange={(e) => handleSliderChange(team.id, metric.id, e.target.value)}
                         className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                         style={{
-                          background: `linear-gradient(to right, #1e3a8a 0%, #1e3a8a ${((score - 1) / 4) * 100}%, #e5e7eb ${((score - 1) / 4) * 100}%, #e5e7eb 100%)`
+                          background: `linear-gradient(to right, #1e3a8a 0%, #1e3a8a ${((score - 1) / 3) * 100}%, #e5e7eb ${((score - 1) / 3) * 100}%, #e5e7eb 100%)`
                         }}
                       />
 
@@ -270,7 +270,6 @@ export default function SliderVotingCard({
                         <span>2</span>
                         <span>3</span>
                         <span>4</span>
-                        <span>5</span>
                       </div>
 
                       {/* Description for current score */}
@@ -283,7 +282,7 @@ export default function SliderVotingCard({
                       {/* Expanded descriptions */}
                       {isExpanded && (
                         <div className="mt-3 p-3 bg-gray-100 rounded border border-gray-300 space-y-2">
-                          {[1, 2, 3, 4, 5].map(level => (
+                          {[1, 2, 3, 4].map(level => (
                             <div key={level} className={`text-xs ${score === level ? 'font-bold text-federal-blue' : 'text-gray-600'}`}>
                               <strong>{level}:</strong> {metric.descriptions[level]}
                             </div>
