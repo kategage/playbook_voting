@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { supabase, METRICS, PHASES } from '../lib/supabase'
-import { AlertCircle, CheckCircle, Send, Info, Lock, Unlock } from 'lucide-react'
+import { AlertCircle, CheckCircle, Send, Info } from 'lucide-react'
 
 // Team color utility function
 const getTeamColorClass = (teamId, type = 'header') => {
@@ -43,7 +43,6 @@ export default function SliderVotingCard({
   onVoteComplete
 }) {
   const [scores, setScores] = useState({})
-  const [lockedTeams, setLockedTeams] = useState({})
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [confirmationNumber, setConfirmationNumber] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -69,41 +68,17 @@ export default function SliderVotingCard({
       })
       setScores(initialScores)
     }
-
-    // Reset locked teams when phase changes
-    setLockedTeams({})
-  }, [teams, voter.team_id, existingVote, phase])
+  }, [teams, voter.team_id, existingVote])
 
   const handleSliderChange = (teamId, metricId, value) => {
     setScores(prev => ({
       ...prev,
       [`${teamId}-${metricId}`]: parseInt(value)
     }))
-    // Unlock team when score changes
-    setLockedTeams(prev => ({
-      ...prev,
-      [teamId]: false
-    }))
-  }
-
-  const toggleLock = (teamId) => {
-    setLockedTeams(prev => ({
-      ...prev,
-      [teamId]: !prev[teamId]
-    }))
-    setError('')
   }
 
   const handleSubmit = async () => {
     setError('')
-
-    // Check if all teams are locked
-    const unlockedTeams = otherTeams.filter(team => !lockedTeams[team.id])
-    if (unlockedTeams.length > 0) {
-      setError(`ERROR: You must lock in your scores for all teams before submitting. ${unlockedTeams.length} team(s) still unlocked: ${unlockedTeams.map(t => t.name).join(', ')}`)
-      return
-    }
-
     setSubmitting(true)
 
     try {
@@ -208,7 +183,6 @@ export default function SliderVotingCard({
             <li>• <strong>Evaluate the {otherTeams.length} other teams</strong> on three metrics (your team is excluded)</li>
             <li>• <strong>Use the sliders</strong> to rate each team from 1 (lowest) to 4 (highest)</li>
             <li>• <strong>Review the descriptions</strong> for each rating level to ensure accuracy</li>
-            <li>• <strong className="text-red-600">Lock in your scores</strong> for each team before submitting</li>
             <li>• <strong>Submit all scores</strong> at once when you're ready</li>
           </ul>
         </div>
@@ -231,42 +205,22 @@ export default function SliderVotingCard({
 
         {/* Team Scoring */}
         <div className="space-y-6 mb-6">
-          {otherTeams.map(team => {
-            const isLocked = lockedTeams[team.id]
-            return (
-              <div
-                key={team.id}
-                className={`border-2 rounded-lg overflow-hidden transition-all ${
-                  isLocked
-                    ? 'border-green-500 shadow-lg shadow-green-200'
-                    : getTeamColorClass(team.id, 'border')
-                }`}
-              >
-                {/* Team Header */}
-                <div className={`px-6 py-4 ${
-                  isLocked
-                    ? 'bg-gradient-to-r from-green-600 to-green-700'
-                    : getTeamColorClass(team.id, 'header')
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${
-                        isLocked ? 'bg-green-100 text-green-800' : getTeamColorClass(team.id, 'badge')
-                      }`}>
-                        {isLocked ? <Lock size={24} /> : team.name[0]}
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-white">{team.name}</h3>
-                      </div>
-                    </div>
-                    {isLocked && (
-                      <div className="flex items-center gap-2 bg-green-500 px-3 py-1 rounded-full">
-                        <CheckCircle size={16} className="text-white" />
-                        <span className="text-sm font-bold text-white">LOCKED</span>
-                      </div>
-                    )}
+          {otherTeams.map(team => (
+            <div
+              key={team.id}
+              className={`border-2 rounded-lg overflow-hidden transition-colors ${getTeamColorClass(team.id, 'border')}`}
+            >
+              {/* Team Header */}
+              <div className={`px-6 py-4 ${getTeamColorClass(team.id, 'header')}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${getTeamColorClass(team.id, 'badge')}`}>
+                    {team.name[0]}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">{team.name}</h3>
                   </div>
                 </div>
+              </div>
 
               {/* Metrics Sliders */}
               <div className="p-6 space-y-6 bg-gray-50">
@@ -305,8 +259,7 @@ export default function SliderVotingCard({
                         step="1"
                         value={score}
                         onChange={(e) => handleSliderChange(team.id, metric.id, e.target.value)}
-                        disabled={isLocked}
-                        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                         style={{
                           background: `linear-gradient(to right, #1e3a8a 0%, #1e3a8a ${((score - 1) / 3) * 100}%, #e5e7eb ${((score - 1) / 3) * 100}%, #e5e7eb 100%)`
                         }}
@@ -339,39 +292,9 @@ export default function SliderVotingCard({
                     </div>
                   )
                 })}
-
-                {/* Lock Button */}
-                <div className="mt-6 pt-6 border-t-2 border-gray-300">
-                  <button
-                    onClick={() => toggleLock(team.id)}
-                    className={`w-full py-3 px-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-                      isLocked
-                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
-                    }`}
-                  >
-                    {isLocked ? (
-                      <>
-                        <Unlock size={24} />
-                        Unlock to Edit Scores
-                      </>
-                    ) : (
-                      <>
-                        <Lock size={24} />
-                        Lock In Scores
-                      </>
-                    )}
-                  </button>
-                  {!isLocked && (
-                    <p className="text-xs text-center text-gray-600 mt-2">
-                      You must lock in your scores before you can submit your ballot
-                    </p>
-                  )}
-                </div>
               </div>
             </div>
-            )
-          })}
+          ))}
         </div>
 
         {/* Error Message */}
@@ -384,40 +307,11 @@ export default function SliderVotingCard({
           </div>
         )}
 
-        {/* Lock Status Summary */}
-        <div className={`border-2 rounded-lg p-4 mb-6 ${
-          Object.values(lockedTeams).filter(Boolean).length === otherTeams.length
-            ? 'bg-green-50 border-green-500'
-            : 'bg-yellow-50 border-yellow-500'
-        }`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {Object.values(lockedTeams).filter(Boolean).length === otherTeams.length ? (
-                <>
-                  <CheckCircle className="text-green-600" size={24} />
-                  <span className="font-bold text-green-800">All teams locked! Ready to submit.</span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle className="text-yellow-600" size={24} />
-                  <span className="font-bold text-yellow-800">Lock all teams before submitting</span>
-                </>
-              )}
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-gray-800">
-                {Object.values(lockedTeams).filter(Boolean).length} / {otherTeams.length}
-              </div>
-              <div className="text-xs text-gray-600">Teams Locked</div>
-            </div>
-          </div>
-        </div>
-
         {/* Warning */}
-        <div className="bg-blue-50 border-l-4 border-federal-blue p-4 mb-6">
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
           <div className="flex items-start gap-2">
-            <Info className="text-federal-blue flex-shrink-0 mt-0.5" size={20} />
-            <div className="text-sm text-gray-700">
+            <AlertCircle className="text-yellow-600 flex-shrink-0 mt-0.5" size={20} />
+            <div className="text-sm text-yellow-800">
               <strong>Note:</strong> Once you submit your scores, they will be officially recorded.
               You can update your scores later if needed, but each submission is logged with a timestamp.
             </div>
