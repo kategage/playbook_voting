@@ -28,15 +28,15 @@ export const METRICS = [
     }
   },
   {
-    id: 'feasibility',
-    name: 'Feasibility',
-    question: 'Is the budget/logistics real?',
+    id: 'adaptability',
+    name: 'Adaptability',
+    question: 'Did they respond to the changing reality, or just execute their original plan harder?',
     descriptions: {
-      1: 'Not feasible: Budget unrealistic; major logistical/operational barriers',
-      2: 'Low feasibility: Significant challenges; requires major resources or assumptions',
-      3: 'Moderately feasible: Possible but requires tradeoffs, adjustments, or added resources',
-      4: 'Highly feasible: Budget and logistics sound; minor risks but manageable',
-      5: 'Fully feasible: Clear, practical, cost-realistic plan with no major obstacles'
+      1: 'RIGID: Ignored the new constraints completely. Continued running a "2024 Playbook" campaign despite the changes in scenario. Made zero changes to their chip allocation. Treated the crisis as a minor annoyance rather than a structural shift.',
+      2: 'REACTIVE (Too Little, Too Late): Acknowledged the crisis but only made superficial tweaks (e.g., changed a slogan but not the operation). Reluctantly moved a few chips but protected their "pet projects" despite them being useless. Complained about the constraints rather than solving for them.',
+      3: 'RESPONSIVE (Competent Pivot): Accepted the new reality and made logical adjustments. They shifted focus to the immediate problem. Cut the required budget amount but struggled to repurpose the remaining funds effectively. They solved the immediate problem but didn\'t change their long-term approach.',
+      4: 'AGILE (Strategic Shift): Proactively abandoned old tactics before they failed. They anticipated the next move. Aggressively re-allocated resources to high-impact areas. Turned the crisis into an opportunity. They used the constraint to build a new kind of power.',
+      5: 'ANTIFRAGILE (Paradigm Shift): Completely reinvented the campaign model. They aren\'t just surviving the crisis; they are thriving because of it. Zero-based budgeting every round. They ruthlessly cut anything that doesn\'t work today. They built a system that gets stronger when the central infrastructure breaks.'
     }
   },
   {

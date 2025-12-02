@@ -49,7 +49,7 @@ export default function SetupTab() {
             <h3 className="font-bold text-federal-blue mb-2">Setup & Configuration</h3>
             <p className="text-sm text-gray-700">
               Configure teams, voter registration, bonus points, and phase controls.
-              Voting system uses fixed metrics (Innovation, Feasibility, Impact) for phases 1-3,
+              Voting system uses fixed metrics (Innovation, Adaptability, Impact) for phases 1-3,
               and ranked choice for Phase 4 (The Final Election).
             </p>
           </div>
